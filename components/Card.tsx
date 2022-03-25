@@ -1,10 +1,26 @@
-import type { NextPage } from "next";
-import Head from "next/head";
 import Link from "next/link";
-import styles from "../styles/Home.module.scss";
+import { FC } from "react";
+import styles from "../styles/Card.module.scss";
 
-const Search: NextPage = () => {
-  return <div className={styles.container}></div>;
+interface CardProps {
+  title: string;
+  href: string;
+}
+
+const Card: FC<CardProps> = ({ href, title }) => {
+  return (
+    <div className={styles.container}>
+      <div>{title}</div>
+      <a
+        className={styles.link}
+        href={`https://www.youtube.com${href}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        youtube.com{href}
+      </a>
+    </div>
+  );
 };
 
-export default Search;
+export default Card;

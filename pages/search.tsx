@@ -2,28 +2,34 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+import Card from "../components/Card";
 import styles from "../styles/Search.module.scss";
-
+import isValidURL from "../utils/isValidUrl";
 interface Link {
-  url: string;
+  href: string;
   title: string;
 }
 
 const Search: NextPage = () => {
   const [url, setUrl] = useState("");
+  const [playlistName, setPlaylistName] = useState("");
   const [links, setLinks] = useState<Link[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClick = useCallback(() => {
     setIsLoading(true);
-    fetch("api/hello", {
+
+    fetch("api/getLinks", {
       method: "POST",
       body: JSON.stringify({ url }),
     })
       .then((res) => res.json())
-      .then((res) => setLinks(res));
-
-    setIsLoading(false);
+      .then((res) => {
+        const { name, data } = res;
+        setPlaylistName(name);
+        setLinks(data);
+      })
+      .then(() => setIsLoading(false));
   }, [url]);
 
   return (
@@ -41,7 +47,7 @@ const Search: NextPage = () => {
             onChange={(e) => setUrl(e.target.value)}
           ></input>
           <input
-            disabled={!url || isLoading}
+            disabled={!isValidURL(url) || isLoading}
             type="button"
             className={styles.searchButton}
             value="Search"
@@ -49,14 +55,20 @@ const Search: NextPage = () => {
           />
         </div>
         <div className={styles.hint}>
-          example: youtube.com/channel/UCY03gpyR
+          example: https://www.youtube.com/c/UlbiTV/videos
         </div>
         {isLoading && <div className={styles.loader}></div>}
-        {links.length > 0 && (
+        {!isLoading && links.length > 0 && (
           <>
-            {links.map((link) => (
-              <div key={link.title}>{link.title}</div>
-            ))}
+            <div className={styles.playlistName}>
+              Playlist name: {playlistName}
+            </div>
+            <div>Found {links.length} items:</div>
+            <div>
+              {links.map((link) => (
+                <Card key={link.title} title={link.title} href={link.href} />
+              ))}
+            </div>
           </>
         )}
         <p>
