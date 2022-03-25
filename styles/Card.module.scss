@@ -3,6 +3,19 @@
   padding: 10px 15px;
   border-radius: 10px;
   margin-bottom: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #999999;
+  }
+}
+
+.selected {
+  background-color: #999999;
+  padding: 10px 15px;
+  border-radius: 10px;
+  margin-bottom: 5px;
+  cursor: pointer;
 }
 
 .link {

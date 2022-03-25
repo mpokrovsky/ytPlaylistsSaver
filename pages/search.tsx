@@ -8,6 +8,7 @@ import isValidURL from "../utils/isValidUrl";
 interface Link {
   href: string;
   title: string;
+  isSelected: boolean;
 }
 
 const Search: NextPage = () => {
@@ -16,7 +17,7 @@ const Search: NextPage = () => {
   const [links, setLinks] = useState<Link[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleClick = useCallback(() => {
+  const handleSearchClick = useCallback(() => {
     setIsLoading(true);
 
     fetch("api/getLinks", {
@@ -27,10 +28,22 @@ const Search: NextPage = () => {
       .then((res) => {
         const { name, data } = res;
         setPlaylistName(name);
-        setLinks(data);
+        setLinks(data.map((d) => ({ ...d, isSelected: false })));
       })
       .then(() => setIsLoading(false));
   }, [url]);
+
+  const handleSelectAllClick = useCallback(() => {
+    setLinks((prev) => prev.map((link) => ({ ...link, isSelected: true })));
+  }, []);
+
+  const handleSelectLink = useCallback((href) => {
+    setLinks((prev) =>
+      prev.map((link) =>
+        link.href === href ? { ...link, isSelected: !link.isSelected } : link
+      )
+    );
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -47,26 +60,48 @@ const Search: NextPage = () => {
             onChange={(e) => setUrl(e.target.value)}
           ></input>
           <input
-            disabled={!isValidURL(url) || isLoading}
+            disabled={!url || !isValidURL(url) || isLoading}
             type="button"
             className={styles.searchButton}
             value="Search"
-            onClick={handleClick}
+            onClick={handleSearchClick}
           />
         </div>
         <div className={styles.hint}>
           example: https://www.youtube.com/c/UlbiTV/videos
         </div>
+
         {isLoading && <div className={styles.loader}></div>}
+
         {!isLoading && links.length > 0 && (
           <>
-            <div className={styles.playlistName}>
-              Playlist name: {playlistName}
+            <div className={styles.header}>
+              <div>Playlist name: {playlistName}</div>
+              <div>Found {links.length} items:</div>
+              <input
+                disabled={
+                  !url ||
+                  !isValidURL(url) ||
+                  isLoading ||
+                  links.every((link) => link.isSelected)
+                }
+                type="button"
+                className={styles.selectButton}
+                value={"SelectAll"}
+                onClick={handleSelectAllClick}
+              />
+              <input
+                disabled={links.every((link) => link.isSelected === false)}
+                type="button"
+                className={styles.selectButton}
+                value={"Save Playlist"}
+                // onClick={handleSelectAllClick}
+              />
             </div>
-            <div>Found {links.length} items:</div>
+
             <div>
               {links.map((link) => (
-                <Card key={link.title} title={link.title} href={link.href} />
+                <Card key={link.href} link={link} onSelect={handleSelectLink} />
               ))}
             </div>
           </>
