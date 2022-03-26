@@ -1,17 +1,17 @@
 import { FC, useCallback } from "react";
-import styles from "../styles/Card.module.scss";
+import styles from "../styles/Link.module.scss";
 
 interface Link {
   href: string;
   title: string;
   isSelected: boolean;
 }
-interface CardProps {
+interface LinkProps {
   onSelect: (id: string) => void;
   link: Link;
 }
 
-const Card: FC<CardProps> = ({ link, onSelect }) => {
+const Link: FC<LinkProps> = ({ link, onSelect }) => {
   const { title, href, isSelected } = link;
   const handleClick = useCallback(() => onSelect(href), [href, onSelect]);
 
@@ -34,4 +34,4 @@ const Card: FC<CardProps> = ({ link, onSelect }) => {
   );
 };
 
-export default Card;
+export default Link;

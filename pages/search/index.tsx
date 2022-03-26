@@ -2,12 +2,16 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import Card from "../components/Card";
-import styles from "../styles/Search.module.scss";
-import isValidURL from "../utils/isValidUrl";
-interface Link {
+import LinkCard from "../../components/Link";
+import SearchInput from "../../components/SearchInput";
+import styles from "../../styles/Search.module.scss";
+import isValidURL from "../../utils/isValidUrl";
+
+interface ResponseData {
   href: string;
   title: string;
+}
+interface Link extends ResponseData {
   isSelected: boolean;
 }
 
@@ -28,7 +32,9 @@ const Search: NextPage = () => {
       .then((res) => {
         const { name, data } = res;
         setPlaylistName(name);
-        setLinks(data.map((d) => ({ ...d, isSelected: false })));
+        setLinks(
+          data.map((lnk: ResponseData) => ({ ...lnk, isSelected: false }))
+        );
       })
       .then(() => setIsLoading(false));
   }, [url]);
@@ -45,6 +51,8 @@ const Search: NextPage = () => {
     );
   }, []);
 
+  const handleSaveClick = useCallback(() => {}, []);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -52,26 +60,13 @@ const Search: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <div className={styles.search}>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="YT channel name"
-            onChange={(e) => setUrl(e.target.value)}
-          ></input>
-          <input
-            disabled={!url || !isValidURL(url) || isLoading}
-            type="button"
-            className={styles.searchButton}
-            value="Search"
-            onClick={handleSearchClick}
-          />
-        </div>
-        <div className={styles.hint}>
-          example: https://www.youtube.com/c/UlbiTV/videos
-        </div>
+        <SearchInput
+          onChange={(e) => setUrl(e.target.value)}
+          isDisabled={!url || !isValidURL(url) || isLoading}
+          onSearchClick={handleSearchClick}
+        />
 
-        {isLoading && <div className={styles.loader}></div>}
+        {isLoading && <div className={styles.loader} />}
 
         {!isLoading && links.length > 0 && (
           <>
@@ -90,18 +85,15 @@ const Search: NextPage = () => {
                 value={"SelectAll"}
                 onClick={handleSelectAllClick}
               />
-              <input
-                disabled={links.every((link) => link.isSelected === false)}
-                type="button"
-                className={styles.selectButton}
-                value={"Save Playlist"}
-                // onClick={handleSelectAllClick}
-              />
             </div>
 
             <div>
               {links.map((link) => (
-                <Card key={link.href} link={link} onSelect={handleSelectLink} />
+                <LinkCard
+                  key={link.href}
+                  link={link}
+                  onSelect={handleSelectLink}
+                />
               ))}
             </div>
           </>
@@ -109,6 +101,18 @@ const Search: NextPage = () => {
         <p>
           <Link href="/">⬅ Return to my playlists</Link>
         </p>
+        <div className={styles.footer}>
+          {links.filter((link) => link.isSelected).length > 0 && (
+            <input
+              type="button"
+              className={styles.saveButton}
+              value={`Save playlist with ${
+                links.filter((link) => link.isSelected).length
+              } items`}
+              onClick={handleSaveClick}
+            />
+          )}
+        </div>
       </main>
     </div>
   );
