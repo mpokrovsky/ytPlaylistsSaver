@@ -10,7 +10,7 @@ export async function getLinks(url: string) {
   // }
 
   const options =
-    process.env.IS_PROD === "1"
+    process.env.NODE_ENV === "production"
       ? {
           args: chromium.args,
           executablePath: await chromium.executablePath,
